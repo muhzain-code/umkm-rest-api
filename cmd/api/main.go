@@ -1,10 +1,10 @@
 package main
 
 import (
+	"log"
 	"os"
 	"umkm-api/internal/app"
 	"umkm-api/internal/router"
-	"log"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 	r := router.SetupRouter(
 		container.UmkmHandler,
 	)
-
+	
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		port = "8080"
