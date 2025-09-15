@@ -1,0 +1,50 @@
+package repository
+
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"umkm-api/internal/model"
+)
+
+type UmkmRepository interface {
+	Create(umkm *model.Umkm) error
+	FindAll() ([]model.Umkm, error)
+	FindByID(id uuid.UUID) (*model.Umkm, error)
+	Update(umkm *model.Umkm) error
+	Delete(id uuid.UUID) error
+}
+
+type umkmRepository struct {
+	db *gorm.DB
+}
+// kenapa return UmkmRepository? karena umkmRepository anggapannya sudah terdaftar sebagai interface (jika sudah memenuhi kriteria)
+func NewUmkmRepository(db *gorm.DB) UmkmRepository {
+	return &umkmRepository{db: db}
+}
+
+func (r *umkmRepository) Create(umkm *model.Umkm) error {
+	return r.db.Create(umkm).Error
+}
+
+func (r *umkmRepository) FindAll() ([]model.Umkm, error) {
+	var umkms []model.Umkm
+	err := r.db.Find(&umkms).Error
+	return umkms, err
+}
+
+func (r *umkmRepository) FindByID(id uuid.UUID) (*model.Umkm, error) {
+	var umkm model.Umkm
+	err := r.db.First(&umkm, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &umkm, nil
+}
+
+func (r *umkmRepository) Update(umkm *model.Umkm) error {
+	return r.db.Save(umkm).Error
+}
+
+func (r *umkmRepository) Delete(id uuid.UUID) error {
+	return r.db.Delete(&model.Umkm{}, "id = ?", id).Error
+}
