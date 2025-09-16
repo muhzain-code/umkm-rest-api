@@ -8,7 +8,7 @@ import (
 
 type UmkmRepository interface {
 	Create(umkm *model.Umkm) error
-	FindAll() ([]model.Umkm, error)
+	FindAll(page, limit int) ([]model.Umkm, int64, error)
 	FindByID(id uuid.UUID) (*model.Umkm, error)
 	Update(umkm *model.Umkm) error
 	Delete(id uuid.UUID) error
@@ -26,10 +26,16 @@ func (r *umkmRepository) Create(umkm *model.Umkm) error {
 	return r.db.Create(umkm).Error
 }
 
-func (r *umkmRepository) FindAll() ([]model.Umkm, error) {
+func (r *umkmRepository) FindAll(page, limit int) ([]model.Umkm, int64, error) {
 	var umkms []model.Umkm
-	err := r.db.Find(&umkms).Error
-	return umkms, err
+	var total int64
+
+	r.db.Model(&model.Umkm{}).Count(&total)
+
+	offset := (page - 1) * limit
+	err := r.db.Model(&model.Umkm{}).Order("created_at desc").Limit(limit).Offset(offset).Find(&umkms).Error
+
+	return umkms, total, err
 }
 
 func (r *umkmRepository) FindByID(id uuid.UUID) (*model.Umkm, error) {
@@ -38,6 +44,7 @@ func (r *umkmRepository) FindByID(id uuid.UUID) (*model.Umkm, error) {
 	if err != nil {
 		return nil, err
 	}
+	
 	return &umkm, nil
 }
 

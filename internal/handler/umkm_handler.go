@@ -8,6 +8,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"strconv"
+	"umkm-api/pkg/response"
 )
 
 type UmkmHandler struct {
@@ -36,14 +38,19 @@ func (c *UmkmHandler) CreateUmkm(ctx *gin.Context) {
 }
 
 func (c *UmkmHandler) GetAllUmkm(ctx *gin.Context) {
-	umkms, err := c.service.GetAll()
+	pageStr := ctx.DefaultQuery("page", "1")
+	limitStr := ctx.DefaultQuery("per_page", "5")
 
+	page, _ := strconv.Atoi(pageStr)
+	limit, _ := strconv.Atoi(limitStr)
+
+	result, err := c.service.GetAll(page, limit)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.ErrorResponse(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, umkms)
+	response.SuccessWithMeta(ctx, "Success fetch UMKMs",  &result.Meta, result.Data)
 }
 
 func (c *UmkmHandler) GetUmkmByID(ctx *gin.Context) {
@@ -60,7 +67,7 @@ func (c *UmkmHandler) GetUmkmByID(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	}
 
-	ctx.JSON(http.StatusOK, umkm)
+	response.Success(ctx, "Success fetch umkm", umkm)
 }
 
 func (c *UmkmHandler) UpdateUmkm(ctx *gin.Context) {

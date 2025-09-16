@@ -7,11 +7,12 @@ import (
 	"umkm-api/internal/request"
 
 	"github.com/google/uuid"
+	"umkm-api/pkg/response"
 )
 
 type UmkmService interface {
 	Create(req request.CreateUmkmRequest) (*model.Umkm, error)
-	GetAll() ([]model.Umkm, error)
+	 GetAll(page, limit int) (*PaginatedUmkm, error)
 	GetByID(id uuid.UUID) (*model.Umkm, error)
 	Update(id uuid.UUID, req request.UpdateUmkmRequest) (*model.Umkm, error)
 	Delete(id uuid.UUID) error
@@ -45,9 +46,35 @@ func (s *umkmService) Create(req request.CreateUmkmRequest) (*model.Umkm, error)
 	}
 	return &umkm, nil
 }
+type PaginatedUmkm struct {
+	Data []model.Umkm
+	Meta response.Meta
+}
 
-func (s *umkmService) GetAll() ([]model.Umkm, error) {
-	return s.repo.FindAll()
+func (s *umkmService) GetAll(page, limit int) (*PaginatedUmkm, error) {
+	umkms, total, err := s.repo.FindAll(page, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	lastPage := int((total + int64(limit) - 1) / int64(limit)) // ceiling division
+	from := (page-1)*limit + 1
+	to := page * limit
+	if int64(to) > total {
+		to = int(total)
+	}
+
+	return &PaginatedUmkm{
+		Data: umkms,
+		Meta: response.Meta{
+			CurrentPage: page,
+			PerPage:     limit,
+			Total:       int(total),
+			LastPage:    lastPage,
+			From:        from,
+			To:          to,
+		},
+	}, nil
 }
 
 func (s *umkmService) GetByID(id uuid.UUID) (*model.Umkm, error) {
