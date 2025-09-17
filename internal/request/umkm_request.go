@@ -30,8 +30,8 @@ type UpdateUmkmRequest struct {
 	Nik              string                `form:"nik" binding:"required,len=16"`
 	Gender           string                `form:"gender" binding:"omitempty,oneof=l p"`
 	Description      *string               `form:"description"`
-	PhotoProfile     *multipart.FileHeader `form:"photo_profile"` // hanya untuk binding
-	PhotoProfilePath *string               `json:"-"`             // disiapkan handler, dipakai service
+	PhotoProfile     *multipart.FileHeader `form:"photo_profile"`
+	PhotoProfilePath *string               `json:"-"`
 	Address          string                `form:"address" binding:"omitempty"`
 	Phone            string                `form:"phone" binding:"omitempty,max=20"`
 	Email            *string               `form:"email"`
@@ -52,7 +52,7 @@ func (r *UpdateUmkmRequest) Validate() error {
 	if err := validate.Struct(r); err != nil {
 		return err
 	}
-	return validatePhoto(r.PhotoProfile, false) // foto opsional di update
+	return validatePhoto(r.PhotoProfile, false)
 }
 
 func validatePhoto(photo *multipart.FileHeader, required bool) error {
@@ -70,47 +70,3 @@ func validatePhoto(photo *multipart.FileHeader, required bool) error {
 	}
 	return nil
 }
-
-// func (r *CreateUmkmRequest) Validate() error{
-// 	validate := validator.New()
-
-// 	if err := validate.Struct(r); err != nil {
-// 		return err
-// 	}
-
-// 	if r.PhotoProfile == nil {
-// 		return errors.New("photo profile required")
-// 	}
-
-// 	ext := strings.ToLower(filepath.Ext(r.PhotoProfile.Filename))
-// 	allowed := []string{".jpg", ".png", ".jpeg"}
-// 	valid := slices.Contains(allowed, ext)
-
-// 	if !valid {
-// 		return errors.New("invalid photo format")
-// 	}
-
-// 	return nil
-// }
-
-// func (r *UpdateUmkmRequest) Validate() error{
-// 	validate := validator.New()
-
-// 	if err := validate.Struct(r); err != nil {
-// 		return err
-// 	}
-
-// 	if r.PhotoProfile == nil {
-// 		return errors.New("photo profile required")
-// 	}
-
-// 	ext := strings.ToLower(filepath.Ext(r.PhotoProfile.Filename))
-// 	allowed := []string{".jpg", ".png", ".jpeg"}
-// 	valid := slices.Contains(allowed, ext)
-
-// 	if !valid {
-// 		return errors.New("invalid photo format")
-// 	}
-
-// 	return nil
-// }

@@ -12,8 +12,8 @@ import (
 	"umkm-api/pkg/response"
 
 	"github.com/gin-gonic/gin"
-	"umkm-api/pkg/utils"
 	"path/filepath"
+	"umkm-api/pkg/utils"
 )
 
 type UmkmHandler struct {
@@ -25,34 +25,32 @@ func NewUmkmHandler(service service.UmkmService) *UmkmHandler {
 }
 
 func (h *UmkmHandler) CreateUmkm(ctx *gin.Context) {
-    var req request.CreateUmkmRequest
-    if err := ctx.ShouldBind(&req); err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	var req request.CreateUmkmRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    // simpan file foto (jika ada)
-    if req.PhotoProfile != nil {
-        filename := uuid.New().String() + filepath.Ext(req.PhotoProfile.Filename)
-        savePath := filepath.Join("uploads", "umkms", filename)
+	if req.PhotoProfile != nil {
+		filename := uuid.New().String() + filepath.Ext(req.PhotoProfile.Filename)
+		savePath := filepath.Join("uploads", "umkms", filename)
 		photoProfile := "umkms/" + filename
 
-        if err := ctx.SaveUploadedFile(req.PhotoProfile, savePath); err != nil {
-            ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
-            return
-        }
-        req.PhotoProfilePath = &photoProfile
-    }
+		if err := ctx.SaveUploadedFile(req.PhotoProfile, savePath); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
+			return
+		}
+		req.PhotoProfilePath = &photoProfile
+	}
 
-    umkm, err := h.service.Create(req)
-    if err != nil {
-        ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	umkm, err := h.service.Create(req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    ctx.JSON(http.StatusCreated, umkm)
+	ctx.JSON(http.StatusCreated, umkm)
 }
-
 
 func (c *UmkmHandler) GetAllUmkm(ctx *gin.Context) {
 	pageStr := ctx.DefaultQuery("page", "1")
@@ -89,53 +87,50 @@ func (c *UmkmHandler) GetUmkmByID(ctx *gin.Context) {
 	}
 
 	umkm.PhotoProfile = utils.URL(ctx, umkm.PhotoProfile)
-	
+
 	response.Success(ctx, "Success fetch umkm", umkm)
 }
 
-
 func (h *UmkmHandler) UpdateUmkm(ctx *gin.Context) {
-    id, err := uuid.Parse(ctx.Param("id"))
-    if err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UUID"})
-        return
-    }
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UUID"})
+		return
+	}
 
-    var req request.UpdateUmkmRequest
-    if err := ctx.ShouldBind(&req); err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	var req request.UpdateUmkmRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    if err := req.Validate(); err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	if err := req.Validate(); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    // Upload foto
-    var fileName *string
-    if req.PhotoProfile != nil {
-        newFileName := uuid.NewString() + filepath.Ext(req.PhotoProfile.Filename)
-        newPath := filepath.Join("uploads", "umkms", newFileName)
+	var fileName *string
+	if req.PhotoProfile != nil {
+		newFileName := uuid.NewString() + filepath.Ext(req.PhotoProfile.Filename)
+		newPath := filepath.Join("uploads", "umkms", newFileName)
 		photoProfile := "umkms/" + newFileName
 
-        if err := ctx.SaveUploadedFile(req.PhotoProfile, newPath); err != nil {
-            ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save photo"})
-            return
-        }
+		if err := ctx.SaveUploadedFile(req.PhotoProfile, newPath); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save photo"})
+			return
+		}
 
-        fileName = &photoProfile
-    }
+		fileName = &photoProfile
+	}
 
-    umkm, err := h.service.Update(id, req, fileName)
-    if err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	umkm, err := h.service.Update(id, req, fileName)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    ctx.JSON(http.StatusOK, umkm)
+	ctx.JSON(http.StatusOK, umkm)
 }
-
 
 func (c *UmkmHandler) DeleteUmkm(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))

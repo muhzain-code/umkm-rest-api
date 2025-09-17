@@ -9,7 +9,6 @@ import (
 func SetupRouter(
 	umkmHandler *handler.UmkmHandler,
 ) *gin.Engine {
-	// gin.Default() untuk middleware bawaan, pakai gin.New() untuk membuat baru/mengosongkan
 	r := gin.New()
 
 	r.Static("/uploads", "./uploads")

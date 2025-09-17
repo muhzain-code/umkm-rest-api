@@ -17,7 +17,7 @@ type UmkmRepository interface {
 type umkmRepository struct {
 	db *gorm.DB
 }
-// kenapa return UmkmRepository? karena umkmRepository anggapannya sudah terdaftar sebagai interface (jika sudah memenuhi kriteria)
+
 func NewUmkmRepository(db *gorm.DB) UmkmRepository {
 	return &umkmRepository{db: db}
 }
@@ -44,7 +44,7 @@ func (r *umkmRepository) FindByID(id uuid.UUID) (*model.Umkm, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &umkm, nil
 }
 

@@ -29,11 +29,10 @@ func SuccessWithMeta(ctx *gin.Context, message string, meta *Meta, data interfac
 func Success(ctx *gin.Context, message string, data interface{}) {
 	response := gin.H{
 		"message": message,
-		"data": data,
+		"data":    data,
 	}
 
 	ctx.JSON(http.StatusOK, response)
-
 
 }
 

@@ -18,7 +18,7 @@ type UmkmService interface {
 	GetAll(page, limit int) (*PaginatedUmkm, error)
 	GetByID(id uuid.UUID) (*model.Umkm, error)
 	Update(id uuid.UUID, req request.UpdateUmkmRequest, photoFileName *string) (*model.Umkm, error)
-	Delete(id uuid.UUID) (error)
+	Delete(id uuid.UUID) error
 }
 
 type umkmService struct {
@@ -37,7 +37,7 @@ func (s *umkmService) Create(req request.CreateUmkmRequest) (*model.Umkm, error)
 		Nik:          req.Nik,
 		Gender:       req.Gender,
 		Description:  req.Description,
-		PhotoProfile: req.PhotoProfilePath, 
+		PhotoProfile: req.PhotoProfilePath,
 		Address:      req.Address,
 		Phone:        req.Phone,
 		Email:        req.Email,
@@ -123,12 +123,10 @@ func (s *umkmService) Update(id uuid.UUID, req request.UpdateUmkmRequest, photoF
 		umkm.IsActive = *req.IsActive
 	}
 
-	// update foto jika ada
 	if photoFileName != nil {
-		// hapus foto lama
 		if umkm.PhotoProfile != nil {
 			oldPath := filepath.Join("uploads", *umkm.PhotoProfile)
-			_ = os.Remove(oldPath) // abaikan error
+			_ = os.Remove(oldPath)
 		}
 		umkm.PhotoProfile = photoFileName
 	}
@@ -140,7 +138,7 @@ func (s *umkmService) Update(id uuid.UUID, req request.UpdateUmkmRequest, photoF
 	return umkm, nil
 }
 
-func (s *umkmService) Delete(id uuid.UUID) (error) {
+func (s *umkmService) Delete(id uuid.UUID) error {
 	umkm, err := s.repo.FindByID(id)
 	if err != nil {
 		return fmt.Errorf("umkm with id %s not found", id)
@@ -149,6 +147,6 @@ func (s *umkmService) Delete(id uuid.UUID) (error) {
 	filepath := "uploads/" + *umkm.PhotoProfile
 	fmt.Println(filepath)
 	_ = os.Remove(filepath)
-	
+
 	return s.repo.Delete(id)
 }

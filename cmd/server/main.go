@@ -13,7 +13,7 @@ func main() {
 	r := router.SetupRouter(
 		container.UmkmHandler,
 	)
-	
+
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		port = "8080"
