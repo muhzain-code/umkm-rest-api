@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"umkm-api/internal/request"
-	"umkm-api/internal/service"
+	"umkm-api/internal/umkm/request"
+	"umkm-api/internal/umkm/service"
 
 	"github.com/google/uuid"
 
@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"path/filepath"
+	"umkm-api/internal/umkm/repository"
 	"umkm-api/pkg/utils"
 )
 
@@ -54,18 +55,31 @@ func (h *UmkmHandler) CreateUmkm(ctx *gin.Context) {
 
 func (c *UmkmHandler) GetAllUmkm(ctx *gin.Context) {
 	pageStr := ctx.DefaultQuery("page", "1")
-	limitStr := ctx.DefaultQuery("per_page", "5")
+	limitStr := ctx.DefaultQuery("per_page", "25")
+	name := ctx.Query("name")
+	statusStr := ctx.Query("status")
 
 	page, _ := strconv.Atoi(pageStr)
 	limit, _ := strconv.Atoi(limitStr)
 
-	result, err := c.service.GetAll(page, limit)
+	var status *bool
+	if statusStr != "" {
+		val := statusStr == "true"
+		status = &val
+	}
+
+	filter := repository.UmkmFilter{
+		Name:   name,
+		IsActive: status,
+	}
+
+	result, err := c.service.GetAll(page, limit, filter)
 	if err != nil {
 		response.ErrorResponse(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	for i := range result.Data {
+	for i := range result.Data {	
 		result.Data[i].PhotoProfile = utils.URL(ctx, result.Data[i].PhotoProfile)
 	}
 

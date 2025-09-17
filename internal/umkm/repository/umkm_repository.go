@@ -3,12 +3,12 @@ package repository
 import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"umkm-api/internal/model"
+	"umkm-api/internal/umkm/model"
 )
 
 type UmkmRepository interface {
 	Create(umkm *model.Umkm) error
-	FindAll(page, limit int) ([]model.Umkm, int64, error)
+	FindAll(page, limit int, filter UmkmFilter) ([]model.Umkm, int64, error)
 	FindByID(id uuid.UUID) (*model.Umkm, error)
 	Update(umkm *model.Umkm) error
 	Delete(id uuid.UUID) error
@@ -26,16 +26,18 @@ func (r *umkmRepository) Create(umkm *model.Umkm) error {
 	return r.db.Create(umkm).Error
 }
 
-func (r *umkmRepository) FindAll(page, limit int) ([]model.Umkm, int64, error) {
+func (r *umkmRepository) FindAll(page, limit int, filter UmkmFilter) ([]model.Umkm, int64, error) {
 	var umkms []model.Umkm
 	var total int64
 
-	if err := r.db.Model(&model.Umkm{}).Count(&total).Error; err != nil {
+	db := r.db.Model(&model.Umkm{})
+	db = ApplyUmkmFilter(db, filter)
+	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	offset := (page - 1) * limit	
-	err := r.db.Model(&model.Umkm{}).Order("created_at desc").Limit(limit).Offset(offset).Find(&umkms).Error
+	offset := (page - 1) * limit
+	err := db.Order("created_at desc").Limit(limit).Offset(offset).Find(&umkms).Error
 
 	return umkms, total, err
 }

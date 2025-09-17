@@ -2,10 +2,10 @@ package app
 
 import (
 	"umkm-api/config"
-	"umkm-api/internal/handler"
-	"umkm-api/internal/model"
-	"umkm-api/internal/repository"
-	"umkm-api/internal/service"
+	"umkm-api/internal/umkm/handler"
+	"umkm-api/internal/umkm/model"
+	"umkm-api/internal/umkm/repository"
+	"umkm-api/internal/umkm/service"
 )
 
 type Container struct {

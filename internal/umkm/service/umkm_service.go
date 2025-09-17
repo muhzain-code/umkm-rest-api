@@ -3,9 +3,9 @@ package service
 import (
 	"fmt"
 	"path/filepath"
-	"umkm-api/internal/model"
-	"umkm-api/internal/repository"
-	"umkm-api/internal/request"
+	"umkm-api/internal/umkm/model"
+	"umkm-api/internal/umkm/repository"
+	"umkm-api/internal/umkm/request"
 
 	"umkm-api/pkg/response"
 
@@ -15,7 +15,7 @@ import (
 
 type UmkmService interface {
 	Create(req request.CreateUmkmRequest) (*model.Umkm, error)
-	GetAll(page, limit int) (*PaginatedUmkm, error)
+	GetAll(page, limit int, filter repository.UmkmFilter) (*PaginatedUmkm, error)
 	GetByID(id uuid.UUID) (*model.Umkm, error)
 	Update(id uuid.UUID, req request.UpdateUmkmRequest, photoFileName *string) (*model.Umkm, error)
 	Delete(id uuid.UUID) error
@@ -55,17 +55,23 @@ type PaginatedUmkm struct {
 	Meta response.Meta
 }
 
-func (s *umkmService) GetAll(page, limit int) (*PaginatedUmkm, error) {
-	umkms, total, err := s.repo.FindAll(page, limit)
+func (s *umkmService) GetAll(page, limit int, filter repository.UmkmFilter) (*PaginatedUmkm, error) {
+	umkms, total, err := s.repo.FindAll(page, limit, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	lastPage := int((total + int64(limit) - 1) / int64(limit)) // ceiling division
-	from := (page-1)*limit + 1
-	to := page * limit
-	if int64(to) > total {
-		to = int(total)
+	lastPage := int((total + int64(limit) - 1) / int64(limit))
+	var from, to int
+	if total == 0 {
+		from = 0
+		to = 0
+	} else {
+		from = (page-1)*limit + 1
+		to = page * limit
+		if int64(to) > total {
+			to = int(total)
+		}
 	}
 
 	return &PaginatedUmkm{
