@@ -2,20 +2,23 @@ package service
 
 import (
 	"fmt"
+	"path/filepath"
 	"umkm-api/internal/model"
 	"umkm-api/internal/repository"
 	"umkm-api/internal/request"
 
-	"github.com/google/uuid"
 	"umkm-api/pkg/response"
+
+	"github.com/google/uuid"
+	"os"
 )
 
 type UmkmService interface {
 	Create(req request.CreateUmkmRequest) (*model.Umkm, error)
-	 GetAll(page, limit int) (*PaginatedUmkm, error)
+	GetAll(page, limit int) (*PaginatedUmkm, error)
 	GetByID(id uuid.UUID) (*model.Umkm, error)
-	Update(id uuid.UUID, req request.UpdateUmkmRequest) (*model.Umkm, error)
-	Delete(id uuid.UUID) error
+	Update(id uuid.UUID, req request.UpdateUmkmRequest, photoFileName *string) (*model.Umkm, error)
+	Delete(id uuid.UUID) (error)
 }
 
 type umkmService struct {
@@ -28,17 +31,17 @@ func NewUmkmService(repo repository.UmkmRepository) UmkmService {
 
 func (s *umkmService) Create(req request.CreateUmkmRequest) (*model.Umkm, error) {
 	umkm := model.Umkm{
-		ID: uuid.New(),
-		Name: req.Name,	
-		OwnerName: req.OwnerName,
-		Nik: req.Nik,
-		Gender: req.Gender,
-		Description: req.Description,
-		PhotoProfile: req.PhotoProfile,
-		Address: req.Address,
-		Phone: req.Phone,
-		Email: req.Email,
-		WaLink: req.WaLink,
+		ID:           uuid.New(),
+		Name:         req.Name,
+		OwnerName:    req.OwnerName,
+		Nik:          req.Nik,
+		Gender:       req.Gender,
+		Description:  req.Description,
+		PhotoProfile: req.PhotoProfilePath, 
+		Address:      req.Address,
+		Phone:        req.Phone,
+		Email:        req.Email,
+		WaLink:       req.WaLink,
 	}
 
 	if err := s.repo.Create(&umkm); err != nil {
@@ -46,6 +49,7 @@ func (s *umkmService) Create(req request.CreateUmkmRequest) (*model.Umkm, error)
 	}
 	return &umkm, nil
 }
+
 type PaginatedUmkm struct {
 	Data []model.Umkm
 	Meta response.Meta
@@ -81,12 +85,13 @@ func (s *umkmService) GetByID(id uuid.UUID) (*model.Umkm, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *umkmService) Update(id uuid.UUID, req request.UpdateUmkmRequest) (*model.Umkm, error) {
+func (s *umkmService) Update(id uuid.UUID, req request.UpdateUmkmRequest, photoFileName *string) (*model.Umkm, error) {
 	umkm, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("umkm with id %s not found", id)
 	}
 
+	// update field string biasa
 	if req.Name != "" {
 		umkm.Name = req.Name
 	}
@@ -102,9 +107,6 @@ func (s *umkmService) Update(id uuid.UUID, req request.UpdateUmkmRequest) (*mode
 	if req.Description != nil {
 		umkm.Description = req.Description
 	}
-	if req.PhotoProfile != nil {
-		umkm.PhotoProfile = req.PhotoProfile
-	}
 	if req.Address != "" {
 		umkm.Address = req.Address
 	}
@@ -117,9 +119,18 @@ func (s *umkmService) Update(id uuid.UUID, req request.UpdateUmkmRequest) (*mode
 	if req.WaLink != "" {
 		umkm.WaLink = req.WaLink
 	}
-	// Kenapa pakai *req.IsAcive? karena untuk cek apakah uses benar" mengirim true/false, karena bisa saja user 
 	if req.IsActive != nil {
 		umkm.IsActive = *req.IsActive
+	}
+
+	// update foto jika ada
+	if photoFileName != nil {
+		// hapus foto lama
+		if umkm.PhotoProfile != nil {
+			oldPath := filepath.Join("uploads", *umkm.PhotoProfile)
+			_ = os.Remove(oldPath) // abaikan error
+		}
+		umkm.PhotoProfile = photoFileName
 	}
 
 	if err := s.repo.Update(umkm); err != nil {
@@ -129,6 +140,15 @@ func (s *umkmService) Update(id uuid.UUID, req request.UpdateUmkmRequest) (*mode
 	return umkm, nil
 }
 
-func (s *umkmService) Delete(id uuid.UUID) error {
+func (s *umkmService) Delete(id uuid.UUID) (error) {
+	umkm, err := s.repo.FindByID(id)
+	if err != nil {
+		return fmt.Errorf("umkm with id %s not found", id)
+	}
+
+	filepath := "uploads/" + *umkm.PhotoProfile
+	fmt.Println(filepath)
+	_ = os.Remove(filepath)
+	
 	return s.repo.Delete(id)
 }

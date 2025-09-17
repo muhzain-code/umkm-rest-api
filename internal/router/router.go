@@ -12,6 +12,8 @@ func SetupRouter(
 	// gin.Default() untuk middleware bawaan, pakai gin.New() untuk membuat baru/mengosongkan
 	r := gin.New()
 
+	r.Static("/uploads", "./uploads")
+
 	r.Use(middleware.Logger())
 	r.Use(middleware.CORS())
 	r.Use(middleware.Recovery())
