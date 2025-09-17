@@ -84,6 +84,7 @@ func (c *UmkmHandler) GetUmkmByID(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
 	}
 
 	umkm.PhotoProfile = utils.URL(ctx, umkm.PhotoProfile)
@@ -136,6 +137,7 @@ func (c *UmkmHandler) DeleteUmkm(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UUID"})
+		return
 	}
 
 	if err := c.service.Delete(id); err != nil {

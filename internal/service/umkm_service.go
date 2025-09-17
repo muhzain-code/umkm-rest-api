@@ -144,9 +144,12 @@ func (s *umkmService) Delete(id uuid.UUID) error {
 		return fmt.Errorf("umkm with id %s not found", id)
 	}
 
-	filepath := "uploads/" + *umkm.PhotoProfile
-	fmt.Println(filepath)
-	_ = os.Remove(filepath)
+	if umkm.PhotoProfile != nil {
+		filePath := filepath.Join("uploads", *umkm.PhotoProfile)
+		if err := os.Remove(filePath); err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("failed to remove file: %w", err)
+		}
+	}
 
 	return s.repo.Delete(id)
 }

@@ -30,9 +30,11 @@ func (r *umkmRepository) FindAll(page, limit int) ([]model.Umkm, int64, error) {
 	var umkms []model.Umkm
 	var total int64
 
-	r.db.Model(&model.Umkm{}).Count(&total)
+	if err := r.db.Model(&model.Umkm{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
 
-	offset := (page - 1) * limit
+	offset := (page - 1) * limit	
 	err := r.db.Model(&model.Umkm{}).Order("created_at desc").Limit(limit).Offset(offset).Find(&umkms).Error
 
 	return umkms, total, err
