@@ -12,6 +12,7 @@ type UmkmRepository interface {
 	FindByID(id uuid.UUID) (*model.Umkm, error)
 	Update(umkm *model.Umkm) error
 	Delete(id uuid.UUID) error
+	
 }
 
 type umkmRepository struct {

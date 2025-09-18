@@ -2,12 +2,14 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"umkm-api/internal/umkm/handler"
+	umkmHandler "umkm-api/internal/umkm/handler"
+	categoryHandler "umkm-api/internal/category/handler"
 	"umkm-api/internal/middleware"
 )
 
 func SetupRouter(
-	umkmHandler *handler.UmkmHandler,
+	umkmHandler *umkmHandler.UmkmHandler,
+	categoryHandler *categoryHandler.CategoryHandler,
 ) *gin.Engine {
 	r := gin.New()
 
@@ -29,6 +31,15 @@ func SetupRouter(
 		umkm.POST("", umkmHandler.CreateUmkm)
 		umkm.PUT("/:id", umkmHandler.UpdateUmkm)
 		umkm.DELETE("/:id", umkmHandler.DeleteUmkm)
+	}
+
+	category := r.Group("/categories")
+	{
+		category.GET("", categoryHandler.GetAllCategory)
+		category.GET("/:id", categoryHandler.GetCategoryByID)
+		category.POST("", categoryHandler.CreateCategory)
+		category.PUT("/:id", categoryHandler.UpdateCategory)
+		category.DELETE("/:id", categoryHandler.DeleteCategory)
 	}
 
 	return r

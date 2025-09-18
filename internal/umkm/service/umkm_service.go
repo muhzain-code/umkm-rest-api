@@ -26,7 +26,7 @@ type umkmService struct {
 }
 
 func NewUmkmService(repo repository.UmkmRepository) UmkmService {
-	return &umkmService{repo: repo}
+	return &umkmService{repo: repo} 
 }
 
 func (s *umkmService) Create(req request.CreateUmkmRequest) (*model.Umkm, error) {

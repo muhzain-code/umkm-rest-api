@@ -12,6 +12,7 @@ func main() {
 
 	r := router.SetupRouter(
 		container.UmkmHandler,
+		container.CategoryHandler,
 	)
 
 	port := os.Getenv("APP_PORT")
