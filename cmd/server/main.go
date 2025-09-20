@@ -13,6 +13,7 @@ func main() {
 	r := router.SetupRouter(
 		container.UmkmHandler,
 		container.CategoryHandler,
+		container.EventHandler,
 	)
 
 	port := os.Getenv("APP_PORT")
