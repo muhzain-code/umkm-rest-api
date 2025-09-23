@@ -16,7 +16,7 @@ func ApplyCategoryFilter(db *gorm.DB, filter CategoryFilter) *gorm.DB {
 	}
 
 	if filter.IsActive != nil {
-		db = db.Where("is_active = ?", *&filter.IsActive)
+		db = db.Where("is_active = ?", &filter.IsActive)
 	}
 	return db
 }

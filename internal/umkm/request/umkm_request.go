@@ -12,7 +12,7 @@ type CreateUmkmRequest struct {
 	Nik              string                `form:"nik" binding:"required,len=16"`
 	Gender           string                `form:"gender" binding:"required,oneof=l p"`
 	Description      *string               `form:"description"`
-	PhotoProfile     *multipart.FileHeader `form:"photo_profile"`
+	PhotoProfile     *multipart.FileHeader `form:"photo_profile"`	
 	PhotoProfilePath *string               `json:"-"`
 	Address          string                `form:"address" binding:"required"`
 	Phone            string                `form:"phone" binding:"required,max=20"`

@@ -5,6 +5,10 @@ import (
 	"os"
 	"umkm-api/internal/app"
 	"umkm-api/internal/router"
+
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
+	"umkm-api/internal/product/request"
 )
 
 func main() {
@@ -13,7 +17,13 @@ func main() {
 	r := router.SetupRouter(
 		container.UmkmHandler,
 		container.CategoryHandler,
+		container.ProductHandler,
 	)
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("photos", request.ValidatePhotos)
+		v.RegisterValidation("marketplaces", request.ValidateMarketplaces)
+	}
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {
