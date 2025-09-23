@@ -7,12 +7,11 @@ import (
 
 type PhotoRequest struct {
 	PhotoType   string  `json:"photo_type" binding:"required,oneof=utama gallery"`
-	FilePath    string  `json:"file_path,omitempty"` // diisi di handler setelah file disave
+	FilePath    string  `json:"file_path,omitempty"`
 	IsActive    *bool   `json:"is_active,omitempty"`
 	Description *string `json:"description,omitempty"`
 }
 
-// Marketplace metadata dikirim via JSON string di field "marketplaces"
 type MarketplaceRequest struct {
 	Name            string  `json:"name" binding:"required,max=50"`
 	Price           float64 `json:"price" binding:"required,gte=0"`

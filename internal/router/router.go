@@ -2,11 +2,11 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	umkmHandler "umkm-api/internal/umkm/handler"
 	categoryHandler "umkm-api/internal/category/handler"
-	productHandler "umkm-api/internal/product/handler"
 	eventHandler "umkm-api/internal/event/handler"
 	"umkm-api/internal/middleware"
+	productHandler "umkm-api/internal/product/handler"
+	umkmHandler "umkm-api/internal/umkm/handler"
 )
 
 func SetupRouter(
@@ -28,40 +28,44 @@ func SetupRouter(
 		c.JSON(200, gin.H{"message": "Server is running!"})
 	})
 
-	umkm := r.Group("/umkms")
+	api := r.Group("/api")
 	{
-		umkm.GET("", umkmHandler.GetAllUmkm)
-		umkm.GET("/:id", umkmHandler.GetUmkmByID)
-		umkm.POST("", umkmHandler.CreateUmkm)
-		umkm.PUT("/:id", umkmHandler.UpdateUmkm)
-		umkm.DELETE("/:id", umkmHandler.DeleteUmkm)
+		umkm := api.Group("/umkms")
+		{
+			umkm.GET("", umkmHandler.GetAllUmkm)
+			umkm.GET("/:id", umkmHandler.GetUmkmByID)
+			umkm.POST("", umkmHandler.CreateUmkm)
+			umkm.PUT("/:id", umkmHandler.UpdateUmkm)
+			umkm.DELETE("/:id", umkmHandler.DeleteUmkm)
+		}
+
+		category := api.Group("/categories")
+		{
+			category.GET("", categoryHandler.GetAllCategory)
+			category.GET("/:id", categoryHandler.GetCategoryByID)
+			category.POST("", categoryHandler.CreateCategory)
+			category.PUT("/:id", categoryHandler.UpdateCategory)
+			category.DELETE("/:id", categoryHandler.DeleteCategory)
+		}
+
+		product := api.Group("/products")
+		{
+			product.GET("", productHandler.GetAllProducts)
+			product.GET("/:id", productHandler.GetProductByID)
+			product.POST("", productHandler.CreateProduct)
+			product.PUT("/:id", productHandler.UpdateProduct)
+			product.DELETE("/:id", productHandler.DeleteProduct)
+		}
+
+		event := api.Group("/events")
+		{
+			event.GET("", eventHandler.GetAllEvent)
+			event.GET("/:id", eventHandler.GetEventByID)
+			event.POST("", eventHandler.CreateEvent)
+			event.PUT("/:id", eventHandler.UpdateEvent)
+			event.DELETE("/:id", eventHandler.DeleteEvent)
+		}
 	}
 
-	category := r.Group("/categories")
-	{
-		category.GET("", categoryHandler.GetAllCategory)
-		category.GET("/:id", categoryHandler.GetCategoryByID)
-		category.POST("", categoryHandler.CreateCategory)
-		category.PUT("/:id", categoryHandler.UpdateCategory)
-		category.DELETE("/:id", categoryHandler.DeleteCategory)
-	}
-
-	product := r.Group("/products")
-	{
-		product.GET("", productHandler.GetAllProducts)
-		product.GET("/:id", productHandler.GetProductByID)
-		product.POST("", productHandler.CreateProduct)
-		product.PUT("/:id", productHandler.UpdateProduct)
-		product.DELETE("/:id", productHandler.DeleteProduct)
-	}
-
-	event := r.Group("/events")
-	{
-		event.GET("", eventHandler.GetAllEvent)
-		event.GET("/:id", eventHandler.GetEventByID)
-		event.POST("", eventHandler.CreateEvent)
-		event.PUT("/:id", eventHandler.UpdateEvent)
-		event.DELETE("/:id", eventHandler.DeleteEvent)
-	}
 	return r
 }
