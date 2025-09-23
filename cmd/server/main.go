@@ -18,6 +18,7 @@ func main() {
 		container.UmkmHandler,
 		container.CategoryHandler,
 		container.ProductHandler,
+		container.EventHandler,
 	)
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
