@@ -31,7 +31,7 @@ func BuildContainer() *Container {
 	db := config.ConnectDB()
 
 	db.AutoMigrate(&umkmModel.Umkm{}, &categoryModel.Category{}, &productModel.Product{}, 
-		&productModel.ProductPhoto{}, &productModel.Marketplace{}, &eventModel.Event{})
+		&productModel.ProductPhoto{}, &productModel.Marketplace{}, &eventModel.Event{}, &eventModel.EventUmkm{} )
 
 	umkmRepo := umkmRepository.NewUmkmRepository(db)
 	umkmService := umkmService.NewUmkmService(umkmRepo)

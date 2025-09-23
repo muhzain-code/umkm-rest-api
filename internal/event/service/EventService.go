@@ -9,10 +9,12 @@ import (
 	"umkm-api/internal/event/repository"
 	"umkm-api/internal/event/request"
 	"umkm-api/pkg/response"
+
+	"github.com/google/uuid"
 )
 
 type EventService interface {
-	GetAll(page, limit int) (*PaginateEvent, error)
+	GetAll(page, limit int, filter repository.EventFilter) (*PaginateEvent, error)
 	GetByID(id int) (*model.Event, error)
 	CreateEvent(req request.CreateEventRequest) (*model.Event, error)
 	UpdateEvent(id int, req request.UpdateEventRequest) (*model.Event, error)
@@ -23,24 +25,46 @@ type eventService struct {
 	repo repository.EventRepository
 }
 type PaginateEvent struct {
-	Data []model.Event
-	Meta response.Meta
+	Data []model.EventResponse `json:"data"`
+	Meta response.Meta         `json:"meta"`
 }
 
 func NewEventService(repo repository.EventRepository) EventService {
 	return &eventService{repo: repo}
 }
 
-func (t *eventService) GetAll(page, limit int) (*PaginateEvent, error) {
-	event, total, err := t.repo.FindAll(page, limit)
+func (s *eventService) GetAll(page, limit int, filter repository.EventFilter) (*PaginateEvent, error) {
+	events, total, err := s.repo.FindAll(page, limit, filter)
 	if err != nil {
 		return nil, err
 	}
+
+	// mapping ke response struct
+	var eventResponses []model.EventResponse
+	for _, e := range events {
+		var umkms []model.EventUmkmResponse
+		for _, eu := range e.EventUmkms {
+			umkms = append(umkms, model.EventUmkmResponse{
+				UmkmID:   eu.UmkmID,
+				IsActive: eu.IsActive,
+			})
+		}
+		eventResponses = append(eventResponses, model.EventResponse{
+			ID:          e.ID,
+			Name:        e.Name,
+			Description: e.Description,
+			Photo:       e.Photo,
+			StartDate:   e.StartDate,
+			EndDate:     e.EndDate,
+			IsActive:    e.IsActive,
+			EventUmkms:  umkms,
+		})
+	}
+
 	lastPage := int((total + int64(limit) - 1) / int64(limit))
 	var from, to int
 	if total == 0 {
-		from = 0
-		to = 0
+		from, to = 0, 0
 	} else {
 		from = (page-1)*limit + 1
 		to = page * limit
@@ -50,7 +74,7 @@ func (t *eventService) GetAll(page, limit int) (*PaginateEvent, error) {
 	}
 
 	return &PaginateEvent{
-		Data: event,
+		Data: eventResponses,
 		Meta: response.Meta{
 			CurrentPage: page,
 			PerPage:     limit,
@@ -76,6 +100,14 @@ func (s *eventService) CreateEvent(req request.CreateEventRequest) (*model.Event
 	if err != nil {
 		return nil, fmt.Errorf("invalid end date: %w", err)
 	}
+
+	// Convert umkm_id dari string ke UUID
+	umkmUUID, err := uuid.Parse(req.UmkmID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid umkm_id: %w", err)
+	}
+
+	// Buat struct Event
 	event := model.Event{
 		Name:        req.Name,
 		Description: req.Description,
@@ -83,7 +115,8 @@ func (s *eventService) CreateEvent(req request.CreateEventRequest) (*model.Event
 		StartDate:   startDate,
 		EndDate:     endDate,
 	}
-	if err := s.repo.Create(&event); err != nil {
+
+	if err := s.repo.Create(&event, []uuid.UUID{umkmUUID}); err != nil {
 		return nil, err
 	}
 	return &event, nil
