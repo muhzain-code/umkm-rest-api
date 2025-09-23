@@ -9,14 +9,20 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 var DB *gorm.DB
+var JWTSecret []byte
+var JWTExpireHour int
 
 func ConnectDB() *gorm.DB {
 	if err := godotenv.Load(); err != nil {
 		log.Println("⚠️ .env file not found, using system environment variables")
 	}
+
+	JWTSecret = []byte(getEnv("JWT_SECRET", "default-secret"))
+	JWTExpireHour = getEnvAsInt("JWT_EXPIRE_HOUR", 24)
 
 	user := getEnv("DB_USER", "root")
 	pass := getEnv("DB_PASS", "")
@@ -46,4 +52,12 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func getEnvAsInt(key string, defaultVal int) int {
+	valStr := getEnv(key, "")
+	if val, err := strconv.Atoi(valStr); err == nil {
+		return val
+	}
+	return defaultVal
 }

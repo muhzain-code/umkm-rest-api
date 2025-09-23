@@ -7,6 +7,8 @@ import (
 	"umkm-api/internal/middleware"
 	productHandler "umkm-api/internal/product/handler"
 	umkmHandler "umkm-api/internal/umkm/handler"
+	"umkm-api/internal/user/auth"
+	userHandler "umkm-api/internal/user/handler"
 )
 
 func SetupRouter(
@@ -14,6 +16,8 @@ func SetupRouter(
 	categoryHandler *categoryHandler.CategoryHandler,
 	productHandler *productHandler.ProductHandler,
 	eventHandler *eventHandler.EventHandler,
+	jwtService auth.JWTService,
+	userHandler *userHandler.UserHandler,
 ) *gin.Engine {
 	r := gin.New()
 
@@ -28,7 +32,11 @@ func SetupRouter(
 		c.JSON(200, gin.H{"message": "Server is running!"})
 	})
 
+	r.POST("/register", userHandler.Register)
+	r.POST("/login", userHandler.Login)
+
 	api := r.Group("/api")
+	api.Use(auth.JWTAuthMiddleware(jwtService))
 	{
 		umkm := api.Group("/umkms")
 		{

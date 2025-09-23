@@ -18,6 +18,13 @@ import (
 	umkmModel "umkm-api/internal/umkm/model"
 	umkmRepository "umkm-api/internal/umkm/repository"
 	umkmService "umkm-api/internal/umkm/service"
+
+	userHandler "umkm-api/internal/user/handler"
+	userModel "umkm-api/internal/user/model"
+	userRepository "umkm-api/internal/user/repository"
+	userService "umkm-api/internal/user/service"
+
+	"umkm-api/internal/user/auth"
 )
 
 type Container struct {
@@ -25,13 +32,15 @@ type Container struct {
 	CategoryHandler *categoryHandler.CategoryHandler
 	ProductHandler  *productHandler.ProductHandler
 	EventHandler    *eventHandler.EventHandler
+	UserHandler     *userHandler.UserHandler
+	JWTService    auth.JWTService
 }
 
 func BuildContainer() *Container {
 	db := config.ConnectDB()
 
-	db.AutoMigrate(&umkmModel.Umkm{}, &categoryModel.Category{}, &productModel.Product{}, 
-		&productModel.ProductPhoto{}, &productModel.Marketplace{}, &eventModel.Event{})
+	db.AutoMigrate(&umkmModel.Umkm{}, &categoryModel.Category{}, &productModel.Product{},
+		&productModel.ProductPhoto{}, &productModel.Marketplace{}, &eventModel.Event{}, &userModel.User{})
 
 	umkmRepo := umkmRepository.NewUmkmRepository(db)
 	umkmService := umkmService.NewUmkmService(umkmRepo)
@@ -49,10 +58,17 @@ func BuildContainer() *Container {
 	eventService := eventService.NewEventService(eventRepo)
 	eventHandler := eventHandler.NewEventHandler(eventService)
 
+	userRepo := userRepository.NewUserRepository(db)
+	userService := userService.NewUserService(userRepo)
+	jwtService := auth.NewJWTService()
+	userHandler := userHandler.NewHandler(userService, jwtService)
+
 	return &Container{
 		UmkmHandler:     umkmHandler,
 		CategoryHandler: categoryHandler,
 		ProductHandler:  productHandler,
 		EventHandler:    eventHandler,
+		UserHandler:     userHandler,
+		JWTService:    jwtService,
 	}
 }

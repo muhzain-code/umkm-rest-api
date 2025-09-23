@@ -19,6 +19,8 @@ func main() {
 		container.CategoryHandler,
 		container.ProductHandler,
 		container.EventHandler,
+		container.JWTService,
+		container.UserHandler,
 	)
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
