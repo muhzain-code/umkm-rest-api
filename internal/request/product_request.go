@@ -54,11 +54,9 @@ func ValidatePhotos(fl validator.FieldLevel) bool {
 		}
 	}
 
-	// harus minimal 1 utama, maksimal 1 utama
 	return countUtama == 1
 }
 
-// Validasi Marketplaces
 func ValidateMarketplaces(fl validator.FieldLevel) bool {
 	marketplaces, ok := fl.Field().Interface().([]MarketplaceRequest)
 	if !ok {
@@ -66,7 +64,6 @@ func ValidateMarketplaces(fl validator.FieldLevel) bool {
 	}
 
 	for _, m := range marketplaces {
-		// kalau ada salah satu diisi → semua harus diisi
 		if m.Name != "" || m.Price > 0 || m.MarketplaceLink != "" {
 			if m.Name == "" || m.Price <= 0 || m.MarketplaceLink == "" {
 				return false

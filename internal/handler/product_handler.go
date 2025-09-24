@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
-
+	"os" 
+	"image/jpeg"
 	"encoding/json"
 
+	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
@@ -17,6 +19,7 @@ import (
 	"umkm-api/pkg/response"
 	"umkm-api/pkg/utils"
 )
+
 
 const uploadDir = "uploads/products"
 
@@ -83,21 +86,49 @@ func (h *ProductHandler) CreateProduct(ctx *gin.Context) {
 	}
 
 	if ctx.Request.MultipartForm != nil && ctx.Request.MultipartForm.File != nil {
-		files := ctx.Request.MultipartForm.File["files"] // expect files[] multiple
+		files := ctx.Request.MultipartForm.File["files"]
 		if len(files) > 0 {
 			if len(req.Photos) == 0 {
 				req.Photos = make([]request.PhotoRequest, len(files))
 			}
 
 			for i, fheader := range files {
-				filename := uuid.New().String() + filepath.Ext(fheader.Filename)
-				savePath := filepath.Join(uploadDir, filename)
+				// Buka file
+				src, err := fheader.Open()
+				if err != nil {
+					response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to open uploaded file: %w", err))
+					return
+				}
+				defer src.Close()
 
-				if err := ctx.SaveUploadedFile(fheader, savePath); err != nil {
-					response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to save uploaded file: %w", err))
+				// Decode gambar
+				img, err := imaging.Decode(src)
+				if err != nil {
+					response.ErrorResponse(ctx, http.StatusBadRequest, fmt.Errorf("invalid image file: %w", err))
 					return
 				}
 
+				// Resize (max width 800px, height mengikuti)
+				resized := imaging.Resize(img, 800, 0, imaging.Lanczos)
+
+				// Generate nama file unik
+				filename := uuid.New().String() + filepath.Ext(fheader.Filename)
+				savePath := filepath.Join(uploadDir, filename)
+
+				// Simpan hasil compress
+				out, err := os.Create(savePath)
+				if err != nil {
+					response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to save file: %w", err))
+					return
+				}
+				defer out.Close()
+
+				if err := jpeg.Encode(out, resized, &jpeg.Options{Quality: 80}); err != nil {
+					response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to encode image: %w", err))
+					return
+				}
+
+				// Simpan ke req.Photos
 				if i < len(req.Photos) {
 					req.Photos[i].FilePath = filepath.ToSlash(filepath.Join("products", filename))
 				} else {
@@ -304,14 +335,42 @@ func (h *ProductHandler) UpdateProduct(ctx *gin.Context) {
 			}
 
 			for i, fheader := range files {
-				filename := uuid.New().String() + filepath.Ext(fheader.Filename)
-				savePath := filepath.Join(uploadDir, filename)
+				// Buka file
+				src, err := fheader.Open()
+				if err != nil {
+					response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to open uploaded file: %w", err))
+					return
+				}
+				defer src.Close()
 
-				if err := ctx.SaveUploadedFile(fheader, savePath); err != nil {
-					response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to save uploaded file: %w", err))
+				// Decode gambar
+				img, err := imaging.Decode(src)
+				if err != nil {
+					response.ErrorResponse(ctx, http.StatusBadRequest, fmt.Errorf("invalid image file: %w", err))
 					return
 				}
 
+				// Resize (max width 800px, height mengikuti)
+				resized := imaging.Resize(img, 800, 0, imaging.Lanczos)
+
+				// Generate nama file unik
+				filename := uuid.New().String() + filepath.Ext(fheader.Filename)
+				savePath := filepath.Join(uploadDir, filename)
+
+				// Simpan hasil compress
+				out, err := os.Create(savePath)
+				if err != nil {
+					response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to save file: %w", err))
+					return
+				}
+				defer out.Close()
+
+				if err := jpeg.Encode(out, resized, &jpeg.Options{Quality: 80}); err != nil {
+					response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to encode image: %w", err))
+					return
+				}
+
+				// Simpan ke req.Photos
 				if i < len(req.Photos) {
 					req.Photos[i].FilePath = filepath.ToSlash(filepath.Join("products", filename))
 				} else {

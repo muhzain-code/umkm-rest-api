@@ -29,14 +29,8 @@ func NewProductService(repo repository.ProductRepository) ProductService {
 }
 
 func (s *productService) Create(req request.CreateProductRequest) (*model.Product, error) {
-	for i, p := range req.Photos {
-		fmt.Printf("Photo[%d]: %+v\n", i, p)
-	}
-	for i, m := range req.Marketplaces {
-		fmt.Printf("Marketplace[%d]: %+v\n", i, m)
-	}
-
 	parseID, err := uuid.Parse(req.UmkmID)
+
 	if err != nil {
 		return nil, fmt.Errorf("invalid umkm_id '%s': %w", req.UmkmID, err)
 	}

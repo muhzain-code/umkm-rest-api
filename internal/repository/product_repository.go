@@ -45,24 +45,6 @@ func (r *productRepository) Create(product *model.Product) error {
 			return err
 		}
 
-		for i := range product.Photos {
-			product.Photos[i].ProductID = product.ID
-		}
-		if len(product.Photos) > 0 {
-			if err := tx.Create(&product.Photos).Error; err != nil {
-				return err
-			}
-		}
-
-		for i := range product.Marketplaces {
-			product.Marketplaces[i].ProductID = product.ID
-		}
-		if len(product.Marketplaces) > 0 {
-			if err := tx.Create(&product.Marketplaces).Error; err != nil {
-				return err
-			}
-		}
-
 		if err := tx.Preload("Umkm").
 			Preload("Category").
 			Preload("Photos").
