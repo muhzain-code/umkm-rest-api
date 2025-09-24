@@ -40,7 +40,7 @@ func BuildContainer() *Container {
 	db := config.ConnectDB()
 
 	db.AutoMigrate(&umkmModel.Umkm{}, &categoryModel.Category{}, &productModel.Product{},
-		&productModel.ProductPhoto{}, &productModel.Marketplace{}, &eventModel.Event{}, &userModel.User{})
+		&productModel.ProductPhoto{}, &productModel.Marketplace{}, &eventModel.Event{}, &userModel.User{}, &eventModel.EventUmkm{})
 
 	umkmRepo := umkmRepository.NewUmkmRepository(db)
 	umkmService := umkmService.NewUmkmService(umkmRepo)

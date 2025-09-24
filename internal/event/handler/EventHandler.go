@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"umkm-api/internal/event/repository"
 	"umkm-api/internal/event/request"
 	"umkm-api/internal/event/service"
 	"umkm-api/pkg/response"
@@ -29,7 +30,54 @@ func (E *EventHandler) GetAllEvent(ctx *gin.Context) {
 
 	page, _ := strconv.Atoi(pageStr)
 	limit, _ := strconv.Atoi(limitStr)
-	result, err := E.service.GetAll(page, limit)
+
+	name := ctx.Query("name")
+	statusStr := ctx.Query("status")
+	startDateStr := ctx.Query("start_date")
+	endDateStr := ctx.Query("end_date")
+	umkmIDStr := ctx.Query("umkm_id")
+
+	var status *bool
+	if statusStr != "" {
+		if statusStr == "1" || statusStr == "true" {
+			val := true
+			status = &val
+		} else if statusStr == "0" || statusStr == "false" {
+			val := false
+			status = &val
+		}
+	}
+
+	var startDate *time.Time
+	if startDateStr != "" {
+		if t, err := time.Parse("2006-01-02", startDateStr); err == nil {
+			startDate = &t
+		}
+	}
+
+	var endDate *time.Time
+	if endDateStr != "" {
+		if t, err := time.Parse("2006-01-02", endDateStr); err == nil {
+			endDate = &t
+		}
+	}
+
+	var umkmID *uuid.UUID
+	if umkmIDStr != "" {
+		if id, err := uuid.Parse(umkmIDStr); err == nil {
+			umkmID = &id
+		}
+	}
+
+	filter := repository.EventFilter{
+		Search:    name,
+		IsActive:  status,
+		StartDate: startDate,
+		EndDate:   endDate,
+		UmkmID:    umkmID,
+	}
+
+	result, err := E.service.GetAll(page, limit, filter)
 	if err != nil {
 		response.ErrorResponse(ctx, http.StatusBadRequest, err)
 		return
@@ -132,19 +180,18 @@ func (h *EventHandler) UpdateEvent(ctx *gin.Context) {
 }
 
 func (h *EventHandler) DeleteEvent(ctx *gin.Context) {
-    idParam := ctx.Param("id")
+	idParam := ctx.Param("id")
 
-    id, err := strconv.Atoi(idParam)
-    if err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-        return
-    }
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 
-    if err := h.service.DeleteEvent(id); err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	if err := h.service.DeleteEvent(id); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    ctx.JSON(http.StatusOK, gin.H{"message": "event deleted successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "event deleted successfully"})
 }
-
