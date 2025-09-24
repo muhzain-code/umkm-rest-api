@@ -3,6 +3,8 @@ package request
 import (
 	"mime/multipart"
 	"umkm-api/pkg/utils"
+
+	"github.com/google/uuid"
 )
 
 type CreateEventRequest struct {
@@ -23,6 +25,8 @@ type UpdateEventRequest struct {
 	StartDate   string                `form:"start_date" binding:"required"`
 	EndDate     string                `form:"end_date" binding:"required"`
 	IsActive    *bool                 `form:"is_active"`
+
+	UmkmIDs []uuid.UUID `form:"umkm_ids[]" json:"umkm_ids"`
 }
 
 func (r *UpdateEventRequest) Validate() error {
