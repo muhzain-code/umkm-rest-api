@@ -39,16 +39,15 @@ func SetupRouter(
 
 	// Protected routes
 	api := r.Group("/api")
-	api.Use(auth.JWTAuthMiddleware(jwtService))
 	{
 		// UMKM routes
 		umkm := api.Group("/umkms")
 		{
 			umkm.GET("", umkmHandler.GetAllUmkm)
 			umkm.GET("/:id", umkmHandler.GetUmkmByID)
-			umkm.POST("", umkmHandler.CreateUmkm)
-			umkm.PUT("/:id", umkmHandler.UpdateUmkm)
-			umkm.DELETE("/:id", umkmHandler.DeleteUmkm)
+			umkm.POST("", umkmHandler.CreateUmkm).Use(auth.JWTAuthMiddleware(jwtService))
+			umkm.PUT("/:id", umkmHandler.UpdateUmkm).Use(auth.JWTAuthMiddleware(jwtService))
+			umkm.DELETE("/:id", umkmHandler.DeleteUmkm).Use(auth.JWTAuthMiddleware(jwtService))
 		}
 
 		// Category routes
@@ -56,9 +55,9 @@ func SetupRouter(
 		{
 			category.GET("", categoryHandler.GetAllCategory)
 			category.GET("/:id", categoryHandler.GetCategoryByID)
-			category.POST("", categoryHandler.CreateCategory)
-			category.PUT("/:id", categoryHandler.UpdateCategory)
-			category.DELETE("/:id", categoryHandler.DeleteCategory)
+			category.POST("", categoryHandler.CreateCategory).Use(auth.JWTAuthMiddleware(jwtService))
+			category.PUT("/:id", categoryHandler.UpdateCategory).Use(auth.JWTAuthMiddleware(jwtService))
+			category.DELETE("/:id", categoryHandler.DeleteCategory).Use(auth.JWTAuthMiddleware(jwtService))
 		}
 
 		// Product routes
@@ -66,9 +65,9 @@ func SetupRouter(
 		{
 			product.GET("", productHandler.GetAllProducts)
 			product.GET("/:id", productHandler.GetProductByID)
-			product.POST("", productHandler.CreateProduct)
-			product.PUT("/:id", productHandler.UpdateProduct)
-			product.DELETE("/:id", productHandler.DeleteProduct)
+			product.POST("", productHandler.CreateProduct).Use(auth.JWTAuthMiddleware(jwtService))
+			product.PUT("/:id", productHandler.UpdateProduct).Use(auth.JWTAuthMiddleware(jwtService))
+			product.DELETE("/:id", productHandler.DeleteProduct).Use(auth.JWTAuthMiddleware(jwtService))
 		}
 
 		// Event routes
@@ -76,9 +75,9 @@ func SetupRouter(
 		{
 			event.GET("", eventHandler.GetAllEvent)
 			event.GET("/:id", eventHandler.GetEventByID)
-			event.POST("", eventHandler.CreateEvent)
-			event.PUT("/:id", eventHandler.UpdateEvent)
-			event.DELETE("/:id", eventHandler.DeleteEvent)
+			event.POST("", eventHandler.CreateEvent).Use(auth.JWTAuthMiddleware(jwtService))
+			event.PUT("/:id", eventHandler.UpdateEvent).Use(auth.JWTAuthMiddleware(jwtService))
+			event.DELETE("/:id", eventHandler.DeleteEvent).Use(auth.JWTAuthMiddleware(jwtService))
 		}
 	}
 
