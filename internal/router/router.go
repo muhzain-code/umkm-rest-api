@@ -2,13 +2,13 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	categoryHandler "umkm-api/internal/category/handler"
-	eventHandler "umkm-api/internal/event/handler"
+	categoryHandler "umkm-api/internal/handler"
+	eventHandler "umkm-api/internal/handler"
 	"umkm-api/internal/middleware"
-	productHandler "umkm-api/internal/product/handler"
-	umkmHandler "umkm-api/internal/umkm/handler"
-	"umkm-api/internal/user/auth"
-	userHandler "umkm-api/internal/user/handler"
+	productHandler "umkm-api/internal/handler"
+	umkmHandler "umkm-api/internal/handler"
+	"umkm-api/internal/auth"
+	userHandler "umkm-api/internal/handler"
 )
 
 func SetupRouter(

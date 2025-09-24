@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"umkm-api/internal/product/request"
+	"umkm-api/internal/request"
 )
 
 func main() {
