@@ -21,11 +21,12 @@ import (
 const uploadDir = "uploads/products"
 
 type ProductHandler struct {
-	service service.ProductService
+	service     service.ProductService
+	activityLog service.ActivityLogService
 }
 
-func NewProductHandler(s service.ProductService) *ProductHandler {
-	return &ProductHandler{service: s}
+func NewProductHandler(s service.ProductService, activityLog service.ActivityLogService) *ProductHandler {
+	return &ProductHandler{service: s, activityLog: activityLog}
 }
 
 func (h *ProductHandler) CreateProduct(ctx *gin.Context) {
@@ -181,7 +182,7 @@ func (h *ProductHandler) GetAllProducts(ctx *gin.Context) {
 			fp := result.Data[i].Photos[j].FilePath
 			url := utils.URL(ctx, &fp)
 			if url != nil {
-				result.Data[i].Photos[j].FilePath = *url 
+				result.Data[i].Photos[j].FilePath = *url
 			}
 		}
 
@@ -221,6 +222,10 @@ func (h *ProductHandler) GetProductByID(ctx *gin.Context) {
 	if product.Category.Photo != nil {
 		product.Category.Photo = utils.URL(ctx, product.Category.Photo)
 	}
+
+	fmt.Println("Logging activity for product view:", product.ID.String())
+
+	h.activityLog.Log(ctx, "view", product.ID.String())
 
 	response.Success(ctx, "Success fetch product", product)
 }

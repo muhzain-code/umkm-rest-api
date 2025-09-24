@@ -20,7 +20,7 @@ type CategoryHandler struct {
 }
 
 func NewCategoryHandler(service service.CategoryService) *CategoryHandler {
-	return &CategoryHandler{service: service}
+	return &CategoryHandler{service: service,}
 }
 
 func (h *CategoryHandler) CreateCategory(ctx *gin.Context) {
@@ -101,6 +101,7 @@ func (h *CategoryHandler) GetCategoryByID(ctx *gin.Context) {
 	}
 
 	category.Photo = utils.URL(ctx, category.Photo)
+
 
 	response.Success(ctx, "Success fetch category", category)
 }

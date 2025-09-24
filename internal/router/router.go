@@ -9,6 +9,7 @@ import (
 	umkmHandler "umkm-api/internal/handler"
 	"umkm-api/internal/auth"
 	userHandler "umkm-api/internal/handler"
+	logHistoryHandler "umkm-api/internal/handler"
 )
 
 func SetupRouter(
@@ -18,6 +19,7 @@ func SetupRouter(
 	eventHandler *eventHandler.EventHandler,
 	jwtService auth.JWTService,
 	userHandler *userHandler.UserHandler,
+	logHistoryHandler *logHistoryHandler.LogHistoryHandler,
 ) *gin.Engine {
 	r := gin.New()
 
@@ -32,8 +34,9 @@ func SetupRouter(
 		c.JSON(200, gin.H{"message": "Server is running!"})
 	})
 
-	r.POST("/register", userHandler.Register)
-	r.POST("/login", userHandler.Login)
+	r.POST("/api/register", userHandler.Register)
+	r.POST("/api/login", userHandler.Login)
+	r.POST("/api/log", logHistoryHandler.Create)
 
 	api := r.Group("/api")
 	api.Use(auth.JWTAuthMiddleware(jwtService))

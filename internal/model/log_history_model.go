@@ -16,7 +16,7 @@ type LogHistory struct {
 	BuyerName    string         `gorm:"size:100;not null" json:"buyer_name"`
 	BuyerPhone   string         `gorm:"size:20;not null" json:"buyer_phone"`
 	BuyerAddress string         `gorm:"type:text;not null" json:"buyer_address"`
-	IpAddress    string         `gorm:"size:45;not null" json:"ip_address"`
+	IPAddress    string         `gorm:"size:45;not null" json:"ip_address"`
 	UserAgent    string         `gorm:"type:text; not null" json:"user_agent"`
 	CreatedAt    time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"autoUpdateTime" json:"updated_at"`

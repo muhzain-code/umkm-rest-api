@@ -21,6 +21,7 @@ func main() {
 		container.EventHandler,
 		container.JWTService,
 		container.UserHandler,
+		container.LogHistoryHandler,
 	)
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
