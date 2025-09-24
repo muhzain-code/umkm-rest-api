@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	categoryModel "umkm-api/internal/model"
 	"umkm-api/internal/model"
-	umkmModel "umkm-api/internal/model"
 	"umkm-api/internal/repository/filter"
 
 	"github.com/google/uuid"
@@ -31,13 +29,13 @@ func NewProductRepository(db *gorm.DB) ProductRepository {
 
 func (r *productRepository) Create(product *model.Product) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		var umkms *umkmModel.Umkm
+		var umkms *model.Umkm
 		if err := tx.First(&umkms, "id = ?", product.UmkmID).Error; err != nil {
 			fmt.Println("error find umkm:", err)
 			return err
 		}
 
-		var category *categoryModel.Category
+		var category *model.Category
 		if err := tx.First(&category, "id = ?", product.CategoryID).Error; err != nil {
 			fmt.Println("error find category:", err)
 			return err

@@ -2,93 +2,84 @@ package app
 
 import (
 	"umkm-api/config"
-	categoryHandler "umkm-api/internal/handler"
-	eventHandler "umkm-api/internal/handler"
-	productHandler "umkm-api/internal/handler"
-	umkmHandler "umkm-api/internal/handler"
-	categoryModel "umkm-api/internal/model"
-	eventModel "umkm-api/internal/model"
-	productModel "umkm-api/internal/model"
-	umkmModel "umkm-api/internal/model"
-	categoryRepository "umkm-api/internal/repository"
-	eventRepository "umkm-api/internal/repository"
-	productRepository "umkm-api/internal/repository"
-	umkmRepository "umkm-api/internal/repository"
-	categoryService "umkm-api/internal/service"
-	eventService "umkm-api/internal/service"
-	productService "umkm-api/internal/service"
-	umkmService "umkm-api/internal/service"
-
-	userHandler "umkm-api/internal/handler"
-	userModel "umkm-api/internal/model"
-	userRepository "umkm-api/internal/repository"
-	userService "umkm-api/internal/service"
-
-	logHistoryHandler "umkm-api/internal/handler"
-	logHistoryModel "umkm-api/internal/model"
-	logHistoryRepository "umkm-api/internal/repository"
-	logHistoryService "umkm-api/internal/service"
-
-	activityLogModel "umkm-api/internal/model"
-	activityLogRepository "umkm-api/internal/repository"
-	activityLogService "umkm-api/internal/service"
-
 	"umkm-api/internal/auth"
+
+	"umkm-api/internal/handler"
+	"umkm-api/internal/model"
+	"umkm-api/internal/repository"
+	"umkm-api/internal/service"
 )
 
 type Container struct {
-	UmkmHandler        *umkmHandler.UmkmHandler
-	CategoryHandler    *categoryHandler.CategoryHandler
-	ProductHandler     *productHandler.ProductHandler
-	EventHandler       *eventHandler.EventHandler
-	UserHandler        *userHandler.UserHandler
+	UmkmHandler        *handler.UmkmHandler
+	CategoryHandler    *handler.CategoryHandler
+	ProductHandler     *handler.ProductHandler
+	EventHandler       *handler.EventHandler
+	UserHandler        *handler.UserHandler
 	JWTService         auth.JWTService
-	LogHistoryHandler  *logHistoryHandler.LogHistoryHandler
-	ActivityLogService activityLogService.ActivityLogService
+	LogHistoryHandler  *handler.LogHistoryHandler
+	ActivityLogService service.ActivityLogService
 }
 
 func BuildContainer() *Container {
 	db := config.ConnectDB()
 
-	db.AutoMigrate(&umkmModel.Umkm{}, &categoryModel.Category{}, &productModel.Product{},
-		&productModel.ProductPhoto{}, &productModel.Marketplace{}, &eventModel.Event{}, &userModel.User{}, &eventModel.EventUmkm{}, &activityLogModel.ActivityLog{}, &logHistoryModel.LogHistory{})
+	db.AutoMigrate(
+		&model.Umkm{},
+		&model.Category{},
+		&model.Product{},
+		&model.ProductPhoto{},
+		&model.Marketplace{},
+		&model.Event{},
+		&model.User{},
+		&model.EventUmkm{},
+		&model.ActivityLog{},
+		&model.LogHistory{},
+	)
 
-	activityLogRepository := activityLogRepository.NewActivityLogRepository(db)
-	activityLog := activityLogService.NewActivityLogService(activityLogRepository)
+	// ActivityLog
+	activityLogRepo := repository.NewActivityLogRepository(db)
+	activityLogSvc := service.NewActivityLogService(activityLogRepo)
 
-	umkmRepo := umkmRepository.NewUmkmRepository(db)
-	umkmService := umkmService.NewUmkmService(umkmRepo)
-	umkmHandler := umkmHandler.NewUmkmHandler(umkmService)
+	// Umkm
+	umkmRepo := repository.NewUmkmRepository(db)
+	umkmSvc := service.NewUmkmService(umkmRepo)
+	umkmH := handler.NewUmkmHandler(umkmSvc)
 
-	categoryRepo := categoryRepository.NewCategoryRepository(db)
-	categoryService := categoryService.NewCategoryService(categoryRepo)
-	categoryHandler := categoryHandler.NewCategoryHandler(categoryService)
+	// Category
+	categoryRepo := repository.NewCategoryRepository(db)
+	categorySvc := service.NewCategoryService(categoryRepo)
+	categoryH := handler.NewCategoryHandler(categorySvc)
 
-	productRepo := productRepository.NewProductRepository(db)
-	productService := productService.NewProductService(productRepo)
-	productHandler := productHandler.NewProductHandler(productService, activityLog)
+	// Product
+	productRepo := repository.NewProductRepository(db)
+	productSvc := service.NewProductService(productRepo)
+	productH := handler.NewProductHandler(productSvc, activityLogSvc)
 
-	eventRepo := eventRepository.NewEventRepository(db)
-	eventService := eventService.NewEventService(eventRepo)
-	eventHandler := eventHandler.NewEventHandler(eventService)
+	// Event
+	eventRepo := repository.NewEventRepository(db)
+	eventSvc := service.NewEventService(eventRepo)
+	eventH := handler.NewEventHandler(eventSvc)
 
-	userRepo := userRepository.NewUserRepository(db)
-	userService := userService.NewUserService(userRepo)
-	jwtService := auth.NewJWTService()
-	userHandler := userHandler.NewHandler(userService, jwtService)
+	// User
+	userRepo := repository.NewUserRepository(db)
+	userSvc := service.NewUserService(userRepo)
+	jwtSvc := auth.NewJWTService()
+	userH := handler.NewHandler(userSvc, jwtSvc)
 
-	logHistoryRepo := logHistoryRepository.NewLogHistoryRepository(db)
-	logHistoryService := logHistoryService.NewLogHistoryService(logHistoryRepo)
-	logHistoryHandler := logHistoryHandler.NewLogHistoryHandler(logHistoryService, activityLog)
+	// LogHistory
+	logHistoryRepo := repository.NewLogHistoryRepository(db)
+	logHistorySvc := service.NewLogHistoryService(logHistoryRepo)
+	logHistoryH := handler.NewLogHistoryHandler(logHistorySvc, activityLogSvc)
 
 	return &Container{
-		UmkmHandler:        umkmHandler,
-		CategoryHandler:    categoryHandler,
-		ProductHandler:     productHandler,
-		EventHandler:       eventHandler,
-		UserHandler:        userHandler,
-		JWTService:         jwtService,
-		LogHistoryHandler:  logHistoryHandler,
-		ActivityLogService: activityLog,
+		UmkmHandler:        umkmH,
+		CategoryHandler:    categoryH,
+		ProductHandler:     productH,
+		EventHandler:       eventH,
+		UserHandler:        userH,
+		JWTService:         jwtSvc,
+		LogHistoryHandler:  logHistoryH,
+		ActivityLogService: activityLogSvc,
 	}
 }

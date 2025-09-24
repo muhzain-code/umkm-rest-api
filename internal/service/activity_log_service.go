@@ -1,4 +1,3 @@
-// internal/service/activity_log_service.go
 package service
 
 import (

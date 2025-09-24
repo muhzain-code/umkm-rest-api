@@ -2,45 +2,46 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	categoryHandler "umkm-api/internal/handler"
-	eventHandler "umkm-api/internal/handler"
-	"umkm-api/internal/middleware"
-	productHandler "umkm-api/internal/handler"
-	umkmHandler "umkm-api/internal/handler"
 	"umkm-api/internal/auth"
-	userHandler "umkm-api/internal/handler"
-	logHistoryHandler "umkm-api/internal/handler"
+	"umkm-api/internal/handler"
+	"umkm-api/internal/middleware"
 )
 
 func SetupRouter(
-	umkmHandler *umkmHandler.UmkmHandler,
-	categoryHandler *categoryHandler.CategoryHandler,
-	productHandler *productHandler.ProductHandler,
-	eventHandler *eventHandler.EventHandler,
+	umkmHandler *handler.UmkmHandler,
+	categoryHandler *handler.CategoryHandler,
+	productHandler *handler.ProductHandler,
+	eventHandler *handler.EventHandler,
 	jwtService auth.JWTService,
-	userHandler *userHandler.UserHandler,
-	logHistoryHandler *logHistoryHandler.LogHistoryHandler,
+	userHandler *handler.UserHandler,
+	logHistoryHandler *handler.LogHistoryHandler,
 ) *gin.Engine {
 	r := gin.New()
 
+	// Serve static files
 	r.Static("/uploads", "./uploads")
 
+	// Global middlewares
 	r.Use(middleware.Logger())
 	r.Use(middleware.CORS())
 	r.Use(middleware.Recovery())
 	r.Use(middleware.RequestID())
 
+	// Health check
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "Server is running!"})
 	})
 
+	// Public routes
 	r.POST("/api/register", userHandler.Register)
 	r.POST("/api/login", userHandler.Login)
 	r.POST("/api/log", logHistoryHandler.Create)
 
+	// Protected routes
 	api := r.Group("/api")
 	api.Use(auth.JWTAuthMiddleware(jwtService))
 	{
+		// UMKM routes
 		umkm := api.Group("/umkms")
 		{
 			umkm.GET("", umkmHandler.GetAllUmkm)
@@ -50,6 +51,7 @@ func SetupRouter(
 			umkm.DELETE("/:id", umkmHandler.DeleteUmkm)
 		}
 
+		// Category routes
 		category := api.Group("/categories")
 		{
 			category.GET("", categoryHandler.GetAllCategory)
@@ -59,6 +61,7 @@ func SetupRouter(
 			category.DELETE("/:id", categoryHandler.DeleteCategory)
 		}
 
+		// Product routes
 		product := api.Group("/products")
 		{
 			product.GET("", productHandler.GetAllProducts)
@@ -68,6 +71,7 @@ func SetupRouter(
 			product.DELETE("/:id", productHandler.DeleteProduct)
 		}
 
+		// Event routes
 		event := api.Group("/events")
 		{
 			event.GET("", eventHandler.GetAllEvent)

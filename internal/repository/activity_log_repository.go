@@ -1,4 +1,3 @@
-// internal/repository/activity_log_repository.go
 package repository
 
 import (
