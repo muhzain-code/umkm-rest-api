@@ -10,10 +10,10 @@ import (
 
 type EventRepository interface {
 	FindAll(page, limit int, filter filter.EventFilter) ([]model.Event, int64, error)
-	FindByID(id int) (*model.Event, error)
+	FindByID(id uuid.UUID) (*model.Event, error)
 	Create(event *model.Event, umkmIDs []uuid.UUID) error
-	Update(umkm *model.Event) error
-	Delete(id int) error
+	Update(event *model.Event, umkmIDs []uuid.UUID) error
+	Delete(id uuid.UUID) error
 }
 
 type eventRepository struct {
@@ -30,7 +30,6 @@ func (m *eventRepository) FindAll(page, limit int, ft filter.EventFilter) ([]mod
 
 	db := m.db.Model(&model.Event{})
 	db = filter.ApplyEventFilter(db, ft)
-
 	// hitung total
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -54,7 +53,7 @@ func (m *eventRepository) FindAll(page, limit int, ft filter.EventFilter) ([]mod
 	return events, total, err
 }
 
-func (i *eventRepository) FindByID(id int) (*model.Event, error) {
+func (i *eventRepository) FindByID(id uuid.UUID) (*model.Event, error) {
 	var event model.Event
 	err := i.db.Preload("EventUmkms").Preload("EventUmkms.Umkm").First(&event, "id = ?", id).Error
 	if err != nil {
@@ -66,12 +65,10 @@ func (i *eventRepository) FindByID(id int) (*model.Event, error) {
 
 func (r *eventRepository) Create(event *model.Event, umkmIDs []uuid.UUID) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		// 1. Insert ke tabel events
 		if err := tx.Create(event).Error; err != nil {
 			return err
 		}
 
-		// 2. Insert ke tabel event_umkm
 		for _, umkmID := range umkmIDs {
 			eventUmkm := model.EventUmkm{
 				EventID:  event.ID,
@@ -87,10 +84,31 @@ func (r *eventRepository) Create(event *model.Event, umkmIDs []uuid.UUID) error 
 	})
 }
 
-func (u *eventRepository) Update(event *model.Event) error {
-	return u.db.Save(event).Error
+func (u *eventRepository) Update(event *model.Event, umkmIDs []uuid.UUID) error {
+	return u.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(event).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Unscoped().Where("event_id = ?", event.ID).Delete(&model.EventUmkm{}).Error; err != nil {
+			return err
+		}
+
+		for _, umkmID := range umkmIDs {
+			eventUmkm := model.EventUmkm{
+				EventID:  event.ID,
+				UmkmID:   umkmID,
+				IsActive: true,
+			}
+			if err := tx.Create(&eventUmkm).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
-func (v *eventRepository) Delete(id int) error {
+func (v *eventRepository) Delete(id uuid.UUID) error {
 	return v.db.Delete(&model.Event{}, "id = ?", id).Error
 }

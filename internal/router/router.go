@@ -15,6 +15,7 @@ func SetupRouter(
 	jwtService auth.JWTService,
 	userHandler *handler.UserHandler,
 	logHistoryHandler *handler.LogHistoryHandler,
+	AppHandler *handler.ApplicationHandler,
 ) *gin.Engine {
 	r := gin.New()
 
@@ -79,6 +80,14 @@ func SetupRouter(
 			event.POST("", eventHandler.CreateEvent)
 			event.PUT("/:id", eventHandler.UpdateEvent)
 			event.DELETE("/:id", eventHandler.DeleteEvent)
+		}
+		app := api.Group("/applications")
+		{
+			app.GET("", AppHandler.GetAllApplication)
+			app.POST("", AppHandler.CreateApplication)
+			app.GET("/:id", AppHandler.GetApplicationByID)
+			app.PUT("/:id", AppHandler.UpdateApplication)
+			app.DELETE("/:id", AppHandler.DeleteApplication)
 		}
 	}
 

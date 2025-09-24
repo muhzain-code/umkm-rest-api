@@ -16,10 +16,10 @@ import (
 
 type EventService interface {
 	GetAll(page, limit int, filter filter.EventFilter) (*PaginateEvent, error)
-	GetByID(id int) (*model.Event, error)
+	GetByID(id uuid.UUID) (*model.Event, error)
 	CreateEvent(req request.CreateEventRequest) (*model.Event, error)
-	UpdateEvent(id int, req request.UpdateEventRequest) (*model.Event, error)
-	DeleteEvent(id int) error
+	UpdateEvent(id uuid.UUID, req request.UpdateEventRequest) (*model.Event, error)
+	DeleteEvent(id uuid.UUID) error
 }
 
 type eventService struct {
@@ -87,7 +87,7 @@ func (s *eventService) GetAll(page, limit int, filter filter.EventFilter) (*Pagi
 	}, nil
 }
 
-func (e *eventService) GetByID(id int) (*model.Event, error) {
+func (e *eventService) GetByID(id uuid.UUID) (*model.Event, error) {
 	return e.repo.FindByID(id)
 }
 
@@ -110,6 +110,7 @@ func (s *eventService) CreateEvent(req request.CreateEventRequest) (*model.Event
 
 	// Buat struct Event
 	event := model.Event{
+		ID:          uuid.New(),
 		Name:        req.Name,
 		Description: req.Description,
 		Photo:       req.PhotoPath,
@@ -123,10 +124,10 @@ func (s *eventService) CreateEvent(req request.CreateEventRequest) (*model.Event
 	return &event, nil
 }
 
-func (i *eventService) UpdateEvent(id int, req request.UpdateEventRequest) (*model.Event, error) {
+func (i *eventService) UpdateEvent(id uuid.UUID, req request.UpdateEventRequest) (*model.Event, error) {
 	event, err := i.repo.FindByID(id)
 	if err != nil {
-		return nil, fmt.Errorf("event with id %d not found", id)
+		return nil, fmt.Errorf("event with id %s not found", id)
 	}
 
 	if req.StartDate != "" {
@@ -161,17 +162,17 @@ func (i *eventService) UpdateEvent(id int, req request.UpdateEventRequest) (*mod
 		event.IsActive = *req.IsActive
 	}
 
-	if err := i.repo.Update(event); err != nil {
+	if err := i.repo.Update(event, req.UmkmIDs); err != nil {
 		return nil, err
 	}
 
 	return event, nil
 }
 
-func (x *eventService) DeleteEvent(id int) error {
+func (x *eventService) DeleteEvent(id uuid.UUID) error {
 	event, err := x.repo.FindByID(id)
 	if err != nil {
-		return fmt.Errorf("event with id %d not found", id)
+		return fmt.Errorf("event with id %s not found", id)
 	}
 
 	if event.Photo != nil {
