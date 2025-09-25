@@ -20,7 +20,7 @@ type Container struct {
 	LogHistoryHandler  *handler.LogHistoryHandler
 	ActivityLogService service.ActivityLogService
 	ApplicationHandler *handler.ApplicationHandler
-	
+	ProductPromoHandler *handler.ProductPromoHandler
 }
 
 func BuildContainer() *Container {
@@ -38,6 +38,7 @@ func BuildContainer() *Container {
 		&model.ActivityLog{},
 		&model.LogHistory{},
 		&model.Application{},
+		&model.ProductPromo{},
 	)
 
 	// ActivityLog
@@ -75,9 +76,13 @@ func BuildContainer() *Container {
 	logHistorySvc := service.NewLogHistoryService(logHistoryRepo)
 	logHistoryH := handler.NewLogHistoryHandler(logHistorySvc, activityLogSvc)
 
-	AppRepo := repository.NewApplicationRepository(db)
-	AppSvc := service.NewApplicationService(AppRepo)
-	AppH := handler.NewApplicationHandler(AppSvc)
+	appRepo := repository.NewApplicationRepository(db)
+	appSvc := service.NewApplicationService(appRepo)
+	appH := handler.NewApplicationHandler(appSvc)
+
+	productPromoRepo := repository.NewProductPromoRepository(db)
+	productPromoSvc := service.NewProductPromoService(productPromoRepo)
+	productPromoH := handler.NewProductPromoHandler(productPromoSvc)
 
 	return &Container{
 		UmkmHandler:        umkmH,
@@ -88,6 +93,7 @@ func BuildContainer() *Container {
 		JWTService:         jwtSvc,
 		LogHistoryHandler:  logHistoryH,
 		ActivityLogService: activityLogSvc,
-		ApplicationHandler: AppH,
+		ApplicationHandler: appH,
+		ProductPromoHandler: productPromoH,
 	}
 }

@@ -102,7 +102,6 @@ func (h *CategoryHandler) GetCategoryByID(ctx *gin.Context) {
 
 	category.Photo = utils.URL(ctx, category.Photo)
 
-
 	response.Success(ctx, "Success fetch category", category)
 }
 

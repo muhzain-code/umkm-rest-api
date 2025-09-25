@@ -16,6 +16,7 @@ func SetupRouter(
 	userHandler *handler.UserHandler,
 	logHistoryHandler *handler.LogHistoryHandler,
 	AppHandler *handler.ApplicationHandler,
+	ProductPromoHandler *handler.ProductPromoHandler,
 ) *gin.Engine {
 	r := gin.New()
 
@@ -80,13 +81,25 @@ func SetupRouter(
 			event.PUT("/:id", eventHandler.UpdateEvent).Use(auth.JWTAuthMiddleware(jwtService))
 			event.DELETE("/:id", eventHandler.DeleteEvent).Use(auth.JWTAuthMiddleware(jwtService))
 		}
+
+		// Applications
 		app := api.Group("/applications")
 		{
 			app.GET("", AppHandler.GetAllApplication)
-			app.POST("", AppHandler.CreateApplication)
 			app.GET("/:id", AppHandler.GetApplicationByID)
-			app.PUT("/:id", AppHandler.UpdateApplication)
-			app.DELETE("/:id", AppHandler.DeleteApplication)
+			app.POST("", AppHandler.CreateApplication).Use(auth.JWTAuthMiddleware(jwtService))
+			app.PUT("/:id", AppHandler.UpdateApplication).Use(auth.JWTAuthMiddleware(jwtService))
+			app.DELETE("/:id", AppHandler.DeleteApplication).Use(auth.JWTAuthMiddleware(jwtService))
+		}
+
+		// Product promos
+		productPromo := api.Group("/product-promos")
+		{
+			productPromo.GET("", ProductPromoHandler.GetAllProductPromo)
+			productPromo.GET("/:id", ProductPromoHandler.GetProductPromoByID)
+			productPromo.POST("", ProductPromoHandler.CreateProductPromo).Use(auth.JWTAuthMiddleware(jwtService))
+			productPromo.PUT("/:id", ProductPromoHandler.UpdateProductPromo).Use(auth.JWTAuthMiddleware(jwtService))
+			productPromo.DELETE("/:id", ProductPromoHandler.DeleteProductPromo).Use(auth.JWTAuthMiddleware(jwtService))
 		}
 	}
 

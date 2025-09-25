@@ -23,6 +23,7 @@ func main() {
 		container.UserHandler,
 		container.LogHistoryHandler,
 		container.ApplicationHandler,
+		container.ProductPromoHandler,
 	)
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
