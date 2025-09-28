@@ -20,7 +20,6 @@ import (
 	"umkm-api/pkg/utils"
 )
 
-
 const uploadDir = "uploads/products"
 
 type ProductHandler struct {

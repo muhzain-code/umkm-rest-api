@@ -9,10 +9,10 @@ import (
 type Product struct {
 	ID     uuid.UUID      `gorm:"type:char(36);primaryKey;not null" json:"id"`
 	UmkmID uuid.UUID      `gorm:"type:char(36);index;not null" json:"umkm_id"`
-	Umkm   Umkm `gorm:"foreignKey:UmkmID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"Umkm"`
+	Umkm   Umkm `gorm:"foreignKey:UmkmID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"Umkm"`
 
 	CategoryID int64                  `gorm:"index;not null" json:"category_id"`
-	Category   Category `gorm:"foreignKey:CategoryID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"Category"`
+	Category   Category `gorm:"foreignKey:CategoryID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"Category"`
 
 	Name        string         `gorm:"size:100;not null" json:"name"`
 	Description *string        `gorm:"type:text" json:"description"`
