@@ -333,6 +333,13 @@ func (h *ProductHandler) UpdateProduct(ctx *gin.Context) {
 				req.Photos = make([]request.PhotoRequest, len(files))
 			}
 
+			uploadDir := filepath.Join("uploads", "products")
+
+			if err := os.MkdirAll(uploadDir, 0755); err != nil {
+				response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to create upload directory: %w", err))
+				return
+			}
+
 			for i, fheader := range files {
 				// Buka file
 				src, err := fheader.Open()

@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"umkm-api/internal/repository/filter"
@@ -14,13 +16,12 @@ import (
 	"github.com/google/uuid"
 )
 
-
 type CategoryHandler struct {
 	service service.CategoryService
 }
 
 func NewCategoryHandler(service service.CategoryService) *CategoryHandler {
-	return &CategoryHandler{service: service,}
+	return &CategoryHandler{service: service}
 }
 
 func (h *CategoryHandler) CreateCategory(ctx *gin.Context) {
@@ -39,6 +40,13 @@ func (h *CategoryHandler) CreateCategory(ctx *gin.Context) {
 		filename := uuid.New().String() + filepath.Ext(req.Photo.Filename)
 		savePath := filepath.Join("uploads", "categories", filename)
 		photo := "categories/" + filename
+
+		uploadDir := filepath.Join("uploads", "categories")
+
+		if err := os.MkdirAll(uploadDir, 0755); err != nil {
+			response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to create upload directory: %w", err))
+			return
+		}
 
 		if err := ctx.SaveUploadedFile(req.Photo, savePath); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})

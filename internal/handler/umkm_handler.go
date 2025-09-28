@@ -16,6 +16,7 @@ import (
 	"umkm-api/pkg/utils"
 
 	"github.com/gin-gonic/gin"
+	"os"
 )
 
 type UmkmHandler struct {
@@ -35,9 +36,16 @@ func (h *UmkmHandler) CreateUmkm(ctx *gin.Context) {
 
 	if req.PhotoProfile != nil {
 		filename := uuid.New().String() + filepath.Ext(req.PhotoProfile.Filename)
-		savePath := filepath.Join("uploads", "umkms", filename)
-		photoProfile := "umkms/" + filename
+		saveDir := filepath.Join("uploads", "umkms")
+		savePath := filepath.Join(saveDir, filename)
 
+		// pastikan folder ada
+		if err := os.MkdirAll(saveDir, 0755); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create directory"})
+			return
+		}
+
+		photoProfile := "umkms/" + filename
 		if err := ctx.SaveUploadedFile(req.PhotoProfile, savePath); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
 			return
@@ -70,7 +78,7 @@ func (c *UmkmHandler) GetAllUmkm(ctx *gin.Context) {
 	}
 
 	filter := filter.UmkmFilter{
-		Name:   name,
+		Name:     name,
 		IsActive: status,
 	}
 
@@ -80,7 +88,7 @@ func (c *UmkmHandler) GetAllUmkm(ctx *gin.Context) {
 		return
 	}
 
-	for i := range result.Data {	
+	for i := range result.Data {
 		result.Data[i].PhotoProfile = utils.URL(ctx, result.Data[i].PhotoProfile)
 	}
 
@@ -128,8 +136,14 @@ func (h *UmkmHandler) UpdateUmkm(ctx *gin.Context) {
 	var fileName *string
 	if req.PhotoProfile != nil {
 		newFileName := uuid.NewString() + filepath.Ext(req.PhotoProfile.Filename)
-		newPath := filepath.Join("uploads", "umkms", newFileName)
+		saveDir := filepath.Join("uploads", "umkms")
+		newPath := filepath.Join(saveDir, newFileName)
 		photoProfile := "umkms/" + newFileName
+
+		if err := os.MkdirAll(saveDir, 0755); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create directory"})
+			return
+		}
 
 		if err := ctx.SaveUploadedFile(req.PhotoProfile, newPath); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save photo"})

@@ -11,6 +11,7 @@ import (
 	"umkm-api/internal/service"
 	"umkm-api/pkg/response"
 	"umkm-api/pkg/utils"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -119,6 +120,13 @@ func (h *EventHandler) CreateEvent(ctx *gin.Context) {
 		filename := fmt.Sprintf("%d%s", time.Now().UnixNano(), filepath.Ext(req.Photo.Filename))
 		savePath := filepath.Join("uploads", "events", filename)
 		photoPath := "events/" + filename
+
+		uploadDir := filepath.Join("uploads", "events")
+
+		if err := os.MkdirAll(uploadDir, 0755); err != nil {
+			response.ErrorResponse(ctx, http.StatusInternalServerError, fmt.Errorf("failed to create upload directory: %w", err))
+			return
+		}
 
 		if err := ctx.SaveUploadedFile(req.Photo, savePath); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
